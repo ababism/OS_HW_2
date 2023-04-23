@@ -52,6 +52,8 @@ gcc bees.c -o bees.exe
 gcc bear.c -o bear.exe
 ./bear.exe 7
 ```
+Медведя можно завершать и включать однако, если завершить пчел, 
+то все программы завершаться
 
 Для решений на 9-10
 запускается сначала pot.exe (чтобы появился горшок и улей), 
@@ -71,6 +73,13 @@ gcc bear.c -o bear.exe
 gcc bee.c -o bee.exe
 ./bee.exe 7 1
 ```
+ВАЖНО!
+Завершение программ на 9-10:
+Стоит завершать программы в следующем порядке:
+сначала медведь, потом pot, потом пчелы.
+Однако можно убирать и добавлять столько угодно 
+пчел пока есть хотя бы одна
+Важно перед тем как завершить последнюю пчелы завершить процесс медведя
 
 ### Сценарий решаемой задачи
 **Задание на 4,5,6 баллов:**
@@ -105,33 +114,35 @@ gcc bee.c -o bee.exe
 Произведены тесты всех программ, результаты расположены в папках программ
 **Задание на 4 балла:**
 
-![img.png](task_4.png)
+![img.png](images/task_4.png)
 
 **Задание на 5 баллов:**
 
-![img.png](task_5.png)
+![img.png](images/task_5.png)
 
 **Задание на 6 баллов:**
 
-![img.png](task_6.png)
+![img.png](images/task_6.png)
 
 **Задание на 7 баллов:**
 
-![img.png](task_7.png)
+![img.png](images/task_7.png)
 
 **Задание на 8 баллов:**
 
-![img.png](task_8.png)
+![img.png](images/task_8.png)
 
 **Задание на 9 баллов:**
 
-![img.png](task_9_bees.png)
+![img.png](images/task_9_bees.png)
 
-![img.png](task_9_other.png)
+![img.png](images/task_9_other.png)
 
 **Задание на 10 баллов:**
 
+![img.png](images/task_10_bees.png)
 
+![img.png](images/task_10_other.png)
 
 
 

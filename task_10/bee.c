@@ -3,19 +3,26 @@
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
-#include <semaphore.h>
+#include <sys/ipc.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/sem.h>
 
-#define PIPE_BEE_NAME "pipe_bee.fifo"
-#define PIPE_POT_NAME "pipe_pot.fifo"
-#define PIPE_BEAR_NAME "pipe_bear.fifo"
+#define PIPE_BEE_NAME "bee.fifo"
+#define PIPE_POT_NAME "pot.fifo"
+#define PIPE_BEAR_NAME "bear.fifo"
+
+#define SEM_PATH "/bee_sem"
+#define SEM_KEY 'S'
+// Семафор UNIX SYSTEM V
+int sem;
+// Определим состояния для семафора
+struct sembuf lock = {0, -1, 0};
+struct sembuf unlock = {0, 1, 0};
 
 int pipe_bee;
 int pipe_pot;
 int pipe_bear;
-
-// Определим имя для семафора
-#define SEM_NAME "/mutex-semaphore"
-sem_t *sem;   // указатель на семафор читателей
 
 int isTerminated = 0;
 
@@ -28,6 +35,9 @@ int main(int argc, char *argv[]) {
     int honey_lim = atoi(argv[1]);
 //    int bees_amount = atoi(argv[2]);
     int amount_made = atoi(argv[2]);
+    key_t key;
+    key = ftok(SEM_PATH, SEM_KEY);
+
     // подключаем pipe
     if ((pipe_bee = open(PIPE_BEE_NAME, O_WRONLY)) < 0) {
         printf("Can\'t open bee oFIFO\n");
@@ -42,9 +52,13 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
     // Создаем именованный семафор
-    if ((sem = sem_open(SEM_NAME, O_CREAT, 0666, 1)) == 0) {
-        perror("sem_open: Can not create mutex semaphore");
-        exit(-1);
+    if ((sem = semget(key, 1, 0660 | IPC_CREAT)) == -1) {
+        perror ("semget: Can not create bee mutex semaphore");
+        exit (1);
+    }
+    if (semctl(sem, 0, SETVAL, 1) == -1) {
+        perror("semctl");
+        exit(1);
     }
     // будет считывать сигналы прерывания с терминала
     signal(SIGINT, terminationCode);
@@ -54,10 +68,11 @@ int main(int argc, char *argv[]) {
     int answer = 0;
     while (isTerminated == 0) {
         // Критическая секция
-        if (sem_wait(sem) == -1) {
-            perror("sem_wait: Incorrect wait of mutex to honey");
-            exit(-1);
-        };
+        semop(sem, &lock, 1);
+//        if (semop(sem, &lock, 1) == -1) {
+//            perror("sem_wait: Incorrect wait of mutex to honey");
+//            exit(-1);
+//        };
         if (write(pipe_bee, &amount_made, sizeof(int)) < 0) {
             printf("Can\'t write string from FIFO\n");
             exit(-1);
@@ -84,28 +99,20 @@ int main(int argc, char *argv[]) {
 //            };
 //            break;
         }
-        if (sem_post(sem) == -1) {
-            perror("sem_post: Incorrect post of  mutex to honey");
-            exit(-1);
-        };
+        semop(sem, &unlock, 1);
+//        if (semop(sem, &unlock, 1) == -1) {
+//            perror("sem_post: Incorrect post of  mutex to honey");
+//            exit(-1);
+//        };
         sleep(2);
     }
-    if (sem_close(sem) == -1) {
-        perror("sem_close: Incorrect close of mutex semaphore");
-        exit(-1);
-    };
-//    if (sem_unlink(SEM_NAME) == -1) {
-//        perror("sem_unlink: Incorrect unlink of mutex semaphore");
-//    };
     close(pipe_bee);
     close(pipe_pot);
     close(pipe_bear);
+    if (semctl(sem, 0, IPC_RMID) == -1) {
+        perror ("semctl IPC_RMID: can't close sem");
+        exit (1);
+    }
     return 0;
-    if (sem_close(sem) == -1) {
-        perror("sem_close: Incorrect close of mutex semaphore");
-        exit(-1);
-    };
-    if (sem_unlink(SEM_NAME) == -1) {
-        perror("sem_unlink: Incorrect unlink of mutex semaphore");
-    };
+
 }

@@ -27,12 +27,10 @@ int main(int argc, char *argv[]) {
     mkfifo(PIPE_BEAR_NAME, 0666);
 //
 //    mknod(PIPE_BEAR_NAME, S_IFIFO | 0666, 0);
-    pipe_bear = open(PIPE_BEAR_NAME, O_RDONLY);
-//    if ((pipe_bear = open(PIPE_BEAR_NAME, O_RDONLY)) < 0) {
-//        printf("Can\'t open bear iFIFO\n");
-//        exit(-1);
-//    }
-
+    if ((pipe_bear = open(PIPE_BEAR_NAME, O_RDONLY)) < 0) {
+        printf("Can\'t open bear iFIFO\n");
+        exit(-1);
+    }
     // будет считывать сигналы прерывания с терминала
     signal(SIGINT, terminationCode);
     signal(SIGTERM, terminationCode);
